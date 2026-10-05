@@ -4,6 +4,7 @@ import { prisma } from './config/database.js';
 import { redis } from './config/redis.js';
 import { env } from './config/env.js';
 import { urlRouter } from './modules/url/url.routes.js';
+import { redirectRouter } from './modules/redirect/redirect.routes.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -22,5 +23,7 @@ app.get('/health', async (_request, response) => {
     dependencies: { postgres: postgres ? 'ok' : 'unavailable', redis: redisHealthy ? 'ok' : 'unavailable' },
   } });
 });
+
+app.use('/', redirectRouter);
 
 app.use((_request, response) => response.status(404).json({ error: { code: 'NOT_FOUND', message: 'Route tidak ditemukan' } }));
