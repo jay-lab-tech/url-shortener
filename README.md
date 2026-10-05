@@ -12,6 +12,8 @@ Foundation phase:
 - BullMQ queue/worker bootstrap.
 - Dependency health endpoint.
 - Auth Service JWT configuration contract.
+- URL creation with generated short codes and optional custom aliases.
+- Cache-first redirects with asynchronous click-event jobs.
 
 Business endpoints are added in small, independently verified commits.
 
@@ -31,7 +33,15 @@ Content-Type: application/json
 }
 ```
 
-`customAlias`, `title`, and `expiresAt` are optional. Without a custom alias, the API generates a random seven-character Base62 `shortCode`. The response contains both identifiers; custom aliases are stored independently and must be unique. The next phase adds redirect handling at `/:shortCode` with Redis cache-first lookup.
+`customAlias`, `title`, and `expiresAt` are optional. Without a custom alias, the API generates a random seven-character Base62 `shortCode`. The response contains both identifiers; custom aliases are stored independently and must be unique.
+
+Redirect using either the generated short code or the custom alias:
+
+```http
+GET /:shortCode
+```
+
+The API returns `302 Found` with a `Location` header, records `X-Redirect-Cache: hit|miss`, and sends click metadata to the BullMQ worker asynchronously. Missing URLs return `404 Not Found`; expired URLs return `410 Gone`.
 
 ## Repository layout
 
@@ -99,4 +109,6 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 ## Documentation
 
 - [Blueprint](BLUEPRINT.md)
-- OpenAPI contract will be added with the first public endpoint module.
+- `POST /api/urls` — create a short URL.
+- `GET /:shortCode` — redirect and enqueue click tracking.
+- `GET /health` — check PostgreSQL and Redis readiness.
