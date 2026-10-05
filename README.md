@@ -43,6 +43,14 @@ GET /:shortCode
 
 The API returns `302 Found` with a `Location` header, records `X-Redirect-Cache: hit|miss`, and sends click metadata to the BullMQ worker asynchronously. Missing URLs return `404 Not Found`; expired URLs return `410 Gone`.
 
+Read analytics for a URL by its UUID:
+
+```http
+GET /api/urls/:id/stats
+```
+
+The response includes URL metadata, the current `clickCount`, and daily click totals. An invalid UUID returns `400`; an unknown URL returns `404`.
+
 ## Repository layout
 
 ```text
@@ -111,4 +119,5 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 - [Blueprint](BLUEPRINT.md)
 - `POST /api/urls` — create a short URL.
 - `GET /:shortCode` — redirect and enqueue click tracking.
+- `GET /api/urls/:id/stats` — read click analytics by URL UUID.
 - `GET /health` — check PostgreSQL and Redis readiness.
