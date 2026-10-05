@@ -5,6 +5,7 @@ import { redis } from './config/redis.js';
 import { env } from './config/env.js';
 import { urlRouter } from './modules/url/url.routes.js';
 import { redirectRouter } from './modules/redirect/redirect.routes.js';
+import { analyticsRouter } from './modules/analytics/analytics.routes.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -12,6 +13,7 @@ app.set('trust proxy', env.TRUST_PROXY);
 app.use(helmet());
 app.use(express.json({ limit: '25kb' }));
 app.use('/api/urls', urlRouter);
+app.use('/api/urls', analyticsRouter);
 
 app.get('/health', async (_request, response) => {
   const [databaseCheck, redisCheck] = await Promise.allSettled([prisma.$queryRaw`SELECT 1`, redis.ping()]);
