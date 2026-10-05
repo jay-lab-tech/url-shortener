@@ -3,7 +3,7 @@ import { createUrl } from './url.repository.js';
 import type { CreateUrlInput } from './url.schemas.js';
 
 export async function createUrlService(userId: string | undefined, input: CreateUrlInput) {
-  const shortCode = input.customAlias ?? await generateUniqueShortCode();
+  const shortCode = await generateUniqueShortCode();
   return createUrl({
     ...(userId ? { userId } : {}),
     shortCode,
