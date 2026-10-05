@@ -15,6 +15,24 @@ Foundation phase:
 
 Business endpoints are added in small, independently verified commits.
 
+## URL API
+
+Create a short URL anonymously or with an Auth Service Bearer token:
+
+```http
+POST /api/urls
+Content-Type: application/json
+
+{
+  "originalUrl": "https://example.com/docs",
+  "customAlias": "docs-home",
+  "title": "Documentation",
+  "expiresAt": "2027-01-01T00:00:00.000Z"
+}
+```
+
+`customAlias`, `title`, and `expiresAt` are optional. Without a custom alias, the API generates a random seven-character Base62 `shortCode`. The response contains both identifiers; custom aliases are stored independently and must be unique. The next phase adds redirect handling at `/:shortCode` with Redis cache-first lookup.
+
 ## Repository layout
 
 ```text
