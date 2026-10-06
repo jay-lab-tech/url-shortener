@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: url_shortener
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d url_shortener"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+
+    defaults:
+      run:
+        working-directory: api
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/url_shortener?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-only-url-shortener-secret-32chars-min
+      JWT_ISSUER: auth-service
+      JWT_AUDIENCE: auth-service
+      PORT: 3002
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply database migrations
+        run: npm run db:deploy
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Start API and worker
+        run: |
+          nohup npm run start > /tmp/url-shortener-api.log 2>&1 &
+          nohup npm run worker > /tmp/url-shortener-worker.log 2>&1 &
+
+      - name: Wait for API
+        working-directory: .
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3002/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/url-shortener-api.log
+          exit 1
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Show service logs on failure
+        if: failure()
+        run: |
+          cat /tmp/url-shortener-api.log || true
+          cat /tmp/url-shortener-worker.log || true

@@ -1,5 +1,7 @@
 # URL Shortener
 
+![CI](https://github.com/jay-lab-tech/url-shortener/actions/workflows/ci.yml/badge.svg)
+
 Performance-focused URL shortener with Redis caching, asynchronous click tracking, and analytics-ready PostgreSQL storage.
 
 ## Current status
@@ -122,6 +124,8 @@ npm run typecheck
 npm run build
 npm audit
 ```
+
+GitHub Actions runs the same checks on every push and pull request, including PostgreSQL/Redis-backed integration tests.
 
 With the Docker Compose stack running, execute integration tests:
 
