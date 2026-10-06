@@ -43,6 +43,8 @@ GET /:shortCode
 
 The API returns `302 Found` with a `Location` header, records `X-Redirect-Cache: hit|miss`, and sends click metadata to the BullMQ worker asynchronously. Missing URLs return `404 Not Found`; expired URLs return `410 Gone`.
 
+Rate limits are applied per client IP: URL creation is limited to 30 requests per minute and redirects to 120 requests per minute. Limited responses return `429 Too Many Requests` with `Retry-After` and `RateLimit-*` headers.
+
 Read analytics for a URL by its UUID:
 
 ```http
