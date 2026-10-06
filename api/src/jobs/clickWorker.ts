@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { env } from '../config/env.js';
 import { prisma } from '../config/database.js';
 import { logger } from '../utils/logger.js';
+import { detectDeviceType } from '../utils/deviceType.js';
 
 type ClickJobData = {
   urlId: string;
@@ -27,6 +28,7 @@ export const clickWorker = new Worker<ClickJobData>('click-tracking', async (job
         ipAddress: job.data.ipAddress ?? null,
         userAgent: job.data.userAgent ?? null,
         referrer: job.data.referrer ?? null,
+        deviceType: detectDeviceType(job.data.userAgent),
         clickedAt,
       },
     }),

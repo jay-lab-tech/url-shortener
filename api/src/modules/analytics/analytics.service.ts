@@ -1,4 +1,4 @@
-import { countClicksByDay, findUrlForAnalytics } from './analytics.repository.js';
+import { countClicksByDay, countClicksByDevice, countClicksByReferrer, findUrlForAnalytics } from './analytics.repository.js';
 
 export class AnalyticsNotFoundError extends Error {
   constructor() {
@@ -8,9 +8,11 @@ export class AnalyticsNotFoundError extends Error {
 }
 
 export async function getUrlAnalytics(urlId: string) {
-  const [url, dailyClicks] = await Promise.all([
+  const [url, dailyClicks, deviceClicks, referrerClicks] = await Promise.all([
     findUrlForAnalytics(urlId),
     countClicksByDay(urlId),
+    countClicksByDevice(urlId),
+    countClicksByReferrer(urlId),
   ]);
 
   if (!url) throw new AnalyticsNotFoundError();
@@ -18,5 +20,7 @@ export async function getUrlAnalytics(urlId: string) {
   return {
     url,
     dailyClicks: dailyClicks.map((row) => ({ day: row.day, clicks: Number(row.clicks) })),
+    devices: deviceClicks.map((row) => ({ deviceType: row.value, clicks: Number(row.clicks) })),
+    referrers: referrerClicks.map((row) => ({ referrer: row.value, clicks: Number(row.clicks) })),
   };
 }
