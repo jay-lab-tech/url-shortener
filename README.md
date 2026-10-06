@@ -60,6 +60,16 @@ Authorization: Bearer <auth-service-access-token>
 
 The `limit` parameter defaults to 50 and is capped at 100. Anonymous URL creation remains supported, but anonymous URLs are not included in an authenticated user's list.
 
+Owners can update or deactivate their URLs:
+
+```http
+PATCH /api/urls/:id
+DELETE /api/urls/:id
+Authorization: Bearer <auth-service-access-token>
+```
+
+`PATCH` accepts `originalUrl`, `title`, `expiresAt`, and `isActive`. `DELETE` performs a soft-delete by setting `isActive` to `false`, preserving click history. Redirect cache entries are invalidated after either operation.
+
 ## Repository layout
 
 ```text
@@ -128,6 +138,8 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 - [Blueprint](BLUEPRINT.md)
 - `POST /api/urls` — create a short URL.
 - `GET /api/urls?limit=50` — list URLs owned by the authenticated user.
+- `PATCH /api/urls/:id` — update an owned URL.
+- `DELETE /api/urls/:id` — deactivate an owned URL without deleting analytics.
 - `GET /:shortCode` — redirect and enqueue click tracking.
 - `GET /api/urls/:id/stats` — read click analytics by URL UUID.
 - `GET /health` — check PostgreSQL and Redis readiness.
