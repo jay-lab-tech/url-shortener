@@ -29,3 +29,7 @@ export function cacheRedirect(identifier: string, value: CachedRedirect, expires
     : CACHE_TTL_SECONDS;
   return redis.set(cacheKey(identifier), JSON.stringify(value), 'EX', expiresIn);
 }
+
+export function invalidateRedirectCache(identifiers: string[]) {
+  return identifiers.length > 0 ? redis.del(...identifiers.map(cacheKey)) : Promise.resolve(0);
+}

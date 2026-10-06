@@ -13,3 +13,15 @@ export const createUrlSchema = z.strictObject({
 });
 
 export type CreateUrlInput = z.infer<typeof createUrlSchema>;
+
+export const updateUrlSchema = z.strictObject({
+  originalUrl: z.string().url().refine((value) => ['http:', 'https:'].includes(new URL(value).protocol), 'URL hanya boleh menggunakan HTTP atau HTTPS').optional(),
+  title: z.string().trim().max(200).nullable().optional(),
+  expiresAt: z.union([
+    z.coerce.date().refine((value) => value.getTime() > Date.now(), 'Tanggal kedaluwarsa harus di masa depan'),
+    z.null(),
+  ]).optional(),
+  isActive: z.boolean().optional(),
+}).refine((value) => Object.keys(value).length > 0, 'Minimal satu field harus diisi');
+
+export type UpdateUrlInput = z.infer<typeof updateUrlSchema>;
