@@ -49,7 +49,7 @@ Read analytics for a URL by its UUID:
 GET /api/urls/:id/stats
 ```
 
-The response includes URL metadata, the current `clickCount`, and daily click totals. An invalid UUID returns `400`; an unknown URL returns `404`.
+The response includes URL metadata, the current `clickCount`, daily click totals, device breakdown, and the ten most common referrers. Device type is inferred from the user agent by the worker. An invalid UUID returns `400`; an unknown URL returns `404`.
 
 ## Repository layout
 
