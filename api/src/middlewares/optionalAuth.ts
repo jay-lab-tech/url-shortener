@@ -32,3 +32,13 @@ export const optionalAuth: RequestHandler = (request, response, next) => {
     response.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Access token tidak valid atau kedaluwarsa' } });
   }
 };
+
+export const requireAuth: RequestHandler = (request, response, next) => {
+  optionalAuth(request, response, () => {
+    if (!request.auth) {
+      response.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Access token diperlukan' } });
+      return;
+    }
+    next();
+  });
+};

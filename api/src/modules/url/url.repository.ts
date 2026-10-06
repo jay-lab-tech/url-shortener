@@ -24,3 +24,12 @@ export function createUrl(data: {
 }) {
   return prisma.url.create({ data, select: urlSelect });
 }
+
+export function findUrlsByUserId(userId: string, limit: number) {
+  return prisma.url.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    select: urlSelect,
+  });
+}
