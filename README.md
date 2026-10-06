@@ -51,6 +51,15 @@ GET /api/urls/:id/stats
 
 The response includes URL metadata, the current `clickCount`, daily click totals, device breakdown, and the ten most common referrers. Device type is inferred from the user agent by the worker. An invalid UUID returns `400`; an unknown URL returns `404`.
 
+Authenticated users can list their own URLs:
+
+```http
+GET /api/urls?limit=50
+Authorization: Bearer <auth-service-access-token>
+```
+
+The `limit` parameter defaults to 50 and is capped at 100. Anonymous URL creation remains supported, but anonymous URLs are not included in an authenticated user's list.
+
 ## Repository layout
 
 ```text
@@ -118,6 +127,7 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 
 - [Blueprint](BLUEPRINT.md)
 - `POST /api/urls` — create a short URL.
+- `GET /api/urls?limit=50` — list URLs owned by the authenticated user.
 - `GET /:shortCode` — redirect and enqueue click tracking.
 - `GET /api/urls/:id/stats` — read click analytics by URL UUID.
 - `GET /health` — check PostgreSQL and Redis readiness.
