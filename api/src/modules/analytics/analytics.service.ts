@@ -17,8 +17,10 @@ export async function getUrlAnalytics(urlId: string) {
 
   if (!url) throw new AnalyticsNotFoundError();
 
+  const { userId, ...publicUrl } = url;
   return {
-    url,
+    ownerId: userId,
+    url: publicUrl,
     dailyClicks: dailyClicks.map((row) => ({ day: row.day, clicks: Number(row.clicks) })),
     devices: deviceClicks.map((row) => ({ deviceType: row.value, clicks: Number(row.clicks) })),
     referrers: referrerClicks.map((row) => ({ referrer: row.value, clicks: Number(row.clicks) })),

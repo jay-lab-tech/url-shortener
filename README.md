@@ -53,7 +53,7 @@ Read analytics for a URL by its UUID:
 GET /api/urls/:id/stats
 ```
 
-The response includes URL metadata, the current `clickCount`, daily click totals, device breakdown, and the ten most common referrers. Device type is inferred from the user agent by the worker. An invalid UUID returns `400`; an unknown URL returns `404`.
+The response includes URL metadata, the current `clickCount`, daily click totals, device breakdown, and the ten most common referrers. Device type is inferred from the user agent by the worker. Analytics for anonymous URLs are public; analytics for owned URLs require the owner or an `ADMIN` access token. An invalid UUID returns `400`; an unknown URL returns `404`.
 
 Authenticated users can list their own URLs:
 

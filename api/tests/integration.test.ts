@@ -81,4 +81,10 @@ test('authenticated users can manage only their own URLs', async () => {
   assert.equal(deleteResponse.status, 200);
   const deleted = await readJson<{ data: { isActive: boolean } }>(deleteResponse);
   assert.equal(deleted.data.isActive, false);
+
+  const protectedStats = await request(`/api/urls/${created.data.id}/stats`);
+  assert.equal(protectedStats.status, 401);
+
+  const ownerStats = await request(`/api/urls/${created.data.id}/stats`, { headers });
+  assert.equal(ownerStats.status, 200);
 });

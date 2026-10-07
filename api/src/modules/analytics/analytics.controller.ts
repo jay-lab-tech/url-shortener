@@ -12,7 +12,14 @@ export async function getUrlAnalyticsController(request: Request, response: Resp
 
   try {
     const data = await getUrlAnalytics(parsed.data.id);
-    return response.status(200).json({ data });
+    if (data.ownerId && (!request.auth || (request.auth.role !== 'ADMIN' && request.auth.userId !== data.ownerId))) {
+      if (!request.auth) {
+        return response.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Access token diperlukan untuk analytics URL ini' } });
+      }
+      return response.status(403).json({ error: { code: 'FORBIDDEN', message: 'Analytics URL ini bukan milik user tersebut' } });
+    }
+    const { ownerId: _ownerId, ...publicData } = data;
+    return response.status(200).json({ data: publicData });
   } catch (error) {
     if (error instanceof AnalyticsNotFoundError) {
       return response.status(404).json({ error: { code: 'URL_NOT_FOUND', message: error.message } });

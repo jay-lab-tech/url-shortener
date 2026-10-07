@@ -2,6 +2,7 @@ import { prisma } from '../../config/database.js';
 
 const analyticsUrlSelect = {
   id: true,
+  userId: true,
   shortCode: true,
   customAlias: true,
   originalUrl: true,
