@@ -31,12 +31,24 @@ function authToken(userId: string) {
 
 test('anonymous URL creation redirects and records analytics', async () => {
   const alias = `test-${Date.now()}`;
+  const invalidResponse = await request('/api/urls', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ originalUrl: 'ftp://example.com/not-allowed' }),
+  });
+  assert.equal(invalidResponse.status, 400);
+
   const createResponse = await request('/api/urls', {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ originalUrl: 'https://example.com/integration', customAlias: alias }),
   });
   assert.equal(createResponse.status, 201);
   const created = await readJson<{ data: { id: string } }>(createResponse);
+
+  const duplicateResponse = await request('/api/urls', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ originalUrl: 'https://example.com/duplicate', customAlias: alias }),
+  });
+  assert.equal(duplicateResponse.status, 409);
 
   const firstRedirect = await request(`/${alias}`, { redirect: 'manual' });
   assert.equal(firstRedirect.status, 302);
@@ -49,6 +61,25 @@ test('anonymous URL creation redirects and records analytics', async () => {
 
   const stats = await waitForClickCount(created.data.id, 2);
   assert.equal(stats.data.url.clickCount, 2);
+
+  const missingRedirect = await request('/does-not-exist', { redirect: 'manual' });
+  assert.equal(missingRedirect.status, 404);
+});
+
+test('expired URLs return 410 Gone', async () => {
+  const alias = `expired-${Date.now()}`;
+  const createResponse = await request('/api/urls', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      originalUrl: 'https://example.com/expired',
+      customAlias: alias,
+      expiresAt: new Date(Date.now() + 1000).toISOString(),
+    }),
+  });
+  assert.equal(createResponse.status, 201);
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const redirectResponse = await request(`/${alias}`, { redirect: 'manual' });
+  assert.equal(redirectResponse.status, 410);
 });
 
 test('authenticated users can manage only their own URLs', async () => {

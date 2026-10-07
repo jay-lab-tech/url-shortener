@@ -134,7 +134,7 @@ $env:JWT_ACCESS_SECRET = "local-url-shortener-development-secret-32chars-min"
 npm run test:integration
 ```
 
-The suite verifies URL creation, cache-first redirects, asynchronous click analytics, JWT ownership, update, and soft-delete flows.
+The suite verifies validation errors, duplicate aliases, URL creation, cache-first redirects, missing and expired URLs, asynchronous click analytics, JWT ownership, update, and soft-delete flows.
 
 Stop services while preserving data:
 
