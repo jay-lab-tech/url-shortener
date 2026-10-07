@@ -151,6 +151,7 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 ## Documentation
 
 - [Blueprint](BLUEPRINT.md)
+- [OpenAPI contract](docs/openapi.yaml)
 - `POST /api/urls` — create a short URL.
 - `GET /api/urls?limit=50` — list URLs owned by the authenticated user.
 - `PATCH /api/urls/:id` — update an owned URL.

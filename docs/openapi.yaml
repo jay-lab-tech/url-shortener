@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener API
+  version: 0.1.0
+  description: URL creation, cache-first redirects, click tracking, and analytics.
+servers:
+  - url: http://localhost:3002
+tags:
+  - name: URLs
+  - name: Redirects
+  - name: Analytics
+paths:
+  /health:
+    get:
+      tags: [URLs]
+      summary: Check PostgreSQL and Redis readiness
+      responses:
+        '200': { description: All dependencies are healthy }
+        '503': { description: A dependency is unavailable }
+  /api/urls:
+    post:
+      tags: [URLs]
+      summary: Create a short URL
+      security: [{}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUrlRequest' }
+      responses:
+        '201': { description: URL created }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { description: Custom alias is already used }
+    get:
+      tags: [URLs]
+      summary: List URLs owned by the authenticated user
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        '200': { description: Owned URL list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/urls/{id}:
+    patch:
+      tags: [URLs]
+      summary: Update an owned URL
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/UrlId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUrlRequest' }
+      responses:
+        '200': { description: URL updated }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [URLs]
+      summary: Deactivate an owned URL
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/UrlId' }
+      responses:
+        '200': { description: URL deactivated without deleting click history }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/urls/{id}/stats:
+    get:
+      tags: [Analytics]
+      summary: Read URL click analytics
+      description: Anonymous URL analytics are public. Owned URL analytics require the owner or an ADMIN token.
+      security: [{}]
+      parameters:
+        - { $ref: '#/components/parameters/UrlId' }
+      responses:
+        '200': { description: Analytics summary }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /{shortCode}:
+    get:
+      tags: [Redirects]
+      summary: Redirect to the original URL
+      parameters:
+        - name: shortCode
+          in: path
+          required: true
+          schema: { type: string, minLength: 3, maxLength: 50 }
+      responses:
+        '302':
+          description: Redirect target
+          headers:
+            Location: { schema: { type: string, format: uri } }
+            X-Redirect-Cache: { schema: { type: string, enum: [hit, miss] } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { description: Short URL has expired }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    UrlId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unauthorized:
+      description: Missing or invalid access token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Insufficient ownership permission
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: URL not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required: [originalUrl]
+      properties:
+        originalUrl: { type: string, format: uri, example: https://example.com/docs }
+        customAlias: { type: string, pattern: '^[a-zA-Z0-9_-]+$', maxLength: 50 }
+        title: { type: string, maxLength: 200 }
+        expiresAt: { type: string, format: date-time }
+    UpdateUrlRequest:
+      type: object
+      minProperties: 1
+      properties:
+        originalUrl: { type: string, format: uri }
+        title: { type: string, nullable: true, maxLength: 200 }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        isActive: { type: boolean }
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
