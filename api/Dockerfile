@@ -1,8 +1,4 @@
-FROM node:24-bookworm-slim
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends openssl \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:24-bookworm
 
 WORKDIR /app
 COPY package.json package-lock.json ./
