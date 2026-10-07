@@ -1,11 +1,12 @@
 FROM node:24-bookworm
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY api/package.json api/package-lock.json ./
 RUN npm ci
-COPY prisma ./prisma
-COPY prisma7.config.ts tsconfig.json ./
-COPY src ./src
+COPY api/prisma ./prisma
+COPY api/prisma7.config.ts api/tsconfig.json ./
+COPY docs ./docs
+COPY api/src ./src
 RUN DATABASE_URL=postgresql://postgres:postgres@localhost:5432/url_shortener npm run db:generate \
     && npm run build
 

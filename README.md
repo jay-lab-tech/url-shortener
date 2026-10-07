@@ -152,6 +152,7 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 
 - [Blueprint](BLUEPRINT.md)
 - [OpenAPI contract](docs/openapi.yaml)
+- Interactive Swagger UI: `http://localhost:3002/docs`
 - `POST /api/urls` — create a short URL.
 - `GET /api/urls?limit=50` — list URLs owned by the authenticated user.
 - `PATCH /api/urls/:id` — update an owned URL.

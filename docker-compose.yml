@@ -1,6 +1,8 @@
 services:
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     ports:
       - "${APP_PORT:-3002}:3002"
     environment:
@@ -26,7 +28,9 @@ services:
     restart: unless-stopped
 
   worker:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     command: ["npm", "run", "worker"]
     environment:
       NODE_ENV: production
