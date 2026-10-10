@@ -160,3 +160,12 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 - `GET /:shortCode` — redirect and enqueue click tracking.
 - `GET /api/urls/:id/stats` — read click analytics by URL UUID.
 - `GET /health` — check PostgreSQL and Redis readiness.
+
+## Project documentation
+
+- [Architecture and redirect flow](ARCHITECTURE.md)
+- [Detailed API reference](API.md)
+- [Security policy and limitations](SECURITY.md)
+- [Benchmark protocol and results status](BENCHMARK.md)
+- [Blueprint](BLUEPRINT.md)
+- [Changelog](CHANGELOG.md)
