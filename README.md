@@ -169,3 +169,9 @@ See [`api/.env.example`](api/.env.example). Never commit `api/.env`, credentials
 - [Benchmark protocol and results status](BENCHMARK.md)
 - [Blueprint](BLUEPRINT.md)
 - [Changelog](CHANGELOG.md)
+
+### Live API documentation
+
+Captured from the running local API at `/docs`:
+
+![URL Shortener Swagger UI](output/playwright/api-docs.png)
